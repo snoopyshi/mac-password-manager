@@ -31,7 +31,7 @@ export interface VaultStatus {
   initialized: boolean
   unlocked: boolean
   idleTimeoutSec: number
-  lastActiveAt?: number
+  lastActiveAt?: string
 }
 
 export interface EntrySummary {
@@ -40,7 +40,7 @@ export interface EntrySummary {
   username: string
   url: string
   tags: string[]
-  updatedAt: number
+  updatedAt: string
 }
 
 export interface Entry {
@@ -51,8 +51,8 @@ export interface Entry {
   url: string
   notes: string
   tags: string[]
-  createdAt: number
-  updatedAt: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface EntryInput {

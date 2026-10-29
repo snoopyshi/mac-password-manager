@@ -85,13 +85,18 @@ function formToEntryInput(form: EntryDraftForm): EntryInput {
   }
 }
 
-function timestampToText(timestamp: number): string {
+function toEpochMs(value: string): number {
+  const parsed = Date.parse(value)
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function timestampToText(timestamp: string): string {
   return new Intl.DateTimeFormat('zh-CN', {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(timestamp * 1000)
+  }).format(toEpochMs(timestamp))
 }
 
 function useDebouncedValue<T>(value: T, delayMs: number) {
@@ -224,7 +229,7 @@ function App() {
       setGlobalError('')
       try {
         const list = await entryList(query, 'updatedAt')
-        const ordered = list.sort((a, b) => b.updatedAt - a.updatedAt)
+        const ordered = list.sort((a, b) => toEpochMs(b.updatedAt) - toEpochMs(a.updatedAt))
         setEntries(ordered)
       } catch (error) {
         if (!handleCommandError(error)) {

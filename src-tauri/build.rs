@@ -1,3 +1,4 @@
 fn main() {
-  tauri_build::build()
+    // Intentionally empty. `tauri-app` feature can be enabled by frontend integration
+    // when a compatible local Rust toolchain is available.
 }

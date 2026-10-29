@@ -4,12 +4,12 @@
 
 ### 1) 项目简介
 
-这是一个 macOS 密码管理器 MVP（前端优先版本）：
+这是一个 macOS 本地密码管理器 MVP：
 
 - Tauri 2 壳 + React/Vite/TypeScript UI
 - 完整实现 MVP UI 流程：解锁、列表搜索、详情编辑、嵌套密码生成器
-- `src-tauri` 当前是**薄 stub**（内存态，仅用于前端联调）
-- 后续将由工程-后端替换为 SQLite + 加密实现
+- `src-tauri` 已接入真实后端：SQLite + Argon2id + AES-256-GCM
+- `src/` 提供完整 MVP 前端界面与交互
 
 ---
 
@@ -39,7 +39,7 @@ npm run dev
 #### 启动 Tauri 桌面应用
 
 ```bash
-npm run tauri dev
+npm run tauri:dev
 ```
 
 #### 构建前端
@@ -109,10 +109,10 @@ cargo check
   - typed invoke 封装 + 统一错误模型 `InvokeCommandError`
 - `src/api/commands.ts`
   - 与 API 规格一致的命令名与 payload 入口
-- `src-tauri/src/stub_backend.rs`
-  - 薄 Rust stub（内存态，仅联调用）
 - `src-tauri/src/lib.rs`
-  - Tauri command 注册与 state 管理
+  - Tauri command 注册与前端 invoke 边界
+- `src-tauri/src/service.rs`
+  - SQLite 持久化、加解密与会话锁定核心逻辑
 
 ---
 
@@ -140,7 +140,7 @@ TS 侧 command 名称与约定保持一致（不扩展命令）：
 
 ### 6) MVP 验证步骤（建议手测）
 
-1. 启动 `npm run tauri dev`
+1. 启动 `npm run tauri:dev`
 2. 首次进入创建主密码（两次输入一致且 >=8）
 3. 新建条目并保存，确认列表出现
 4. 搜索关键字，确认有防抖和结果筛选
@@ -155,15 +155,14 @@ TS 侧 command 名称与约定保持一致（不扩展命令）：
 
 ---
 
-### 7) Stub 存储说明（重要）
+### 7) 后端实现说明（SQLite + 加密）
 
-当前 Rust 端仅为联调 stub：
+当前主分支后端实现为真实本地持久化：
 
-- **只在内存中保存数据**
-- 重启应用后数据会丢失
-- 不包含真实 SQLite 持久化与加密
-
-请将其视为“前端可运行壳”，不是生产实现。
+- 存储：SQLite（`vault.sqlite3`，位于应用数据目录）
+- KDF：Argon2id（主密码派生 vault key）
+- 加密：AES-256-GCM（敏感字段密文存储）
+- 会话：默认 300 秒空闲自动锁定，手动锁定会清除会话密钥
 
 ---
 
@@ -171,12 +170,12 @@ TS 侧 command 名称与约定保持一致（不扩展命令）：
 
 ### 1) Overview
 
-This repository contains a frontend-first MVP for a macOS password manager:
+This repository contains a local-first MVP for a macOS password manager:
 
 - Tauri 2 shell + React/Vite/TypeScript UI
 - MVP screens implemented: unlock, list/search, detail/edit, nested generator
-- `src-tauri` currently uses a **thin in-memory stub**
-- Real SQLite + encryption backend will replace the stub
+- `src-tauri` now uses the merged real backend (SQLite + Argon2id + AES-256-GCM)
+- `src/` contains the full MVP React UI and typed invoke client
 
 ### 2) Run & Build
 
@@ -201,7 +200,7 @@ npm run dev
 Run desktop app:
 
 ```bash
-npm run tauri dev
+npm run tauri:dev
 ```
 
 Build frontend:
@@ -224,8 +223,8 @@ cargo check
 - `src/api/types.ts`: contract types
 - `src/api/client.ts`: typed invoke wrapper + normalized errors
 - `src/api/commands.ts`: API-contract command wrappers
-- `src-tauri/src/stub_backend.rs`: temporary in-memory backend stub
-- `src-tauri/src/lib.rs`: Tauri command registration
+- `src-tauri/src/lib.rs`: Tauri command registration and invoke boundary
+- `src-tauri/src/service.rs`: encrypted SQLite persistence and vault session logic
 
 ### 4) Verification checklist
 
@@ -237,10 +236,11 @@ cargo check
 6. Dirty-leave confirm on back/lock/auto-lock
 7. Manual lock and idle auto-lock (300s)
 
-### 5) Stub storage note
+### 5) Backend storage and security note
 
-Current Rust backend is for frontend integration only:
+Current backend is persisted and encrypted:
 
-- In-memory storage only
-- Data is lost after app restart
-- Not encrypted, not persisted
+- SQLite vault database in app data directory
+- Master password key derivation via Argon2id
+- AES-256-GCM encryption for sensitive fields
+- Session key cleared on lock/timeout

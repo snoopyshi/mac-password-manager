@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev --features tauri-app",
+    "tauri:build": "tauri build --features tauri-app"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
