@@ -52,12 +52,6 @@ pub struct EntryInput {
 
 #[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
-pub struct MasterPasswordPayload {
-    pub master_password: String,
-}
-
-#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
 pub struct IdPayload {
     pub id: String,
 }

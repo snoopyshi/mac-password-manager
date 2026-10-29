@@ -4,16 +4,21 @@
   "version": "0.1.0",
   "identifier": "com.lumingshi.macpasswordmanager",
   "build": {
-    "beforeDevCommand": "",
-    "beforeBuildCommand": "",
-    "frontendDist": "../frontend-dist"
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "mac-password-manager",
-        "width": 1000,
-        "height": 720
+        "title": "Mac 密码管理器",
+        "width": 880,
+        "height": 640,
+        "minWidth": 720,
+        "minHeight": 480,
+        "resizable": true,
+        "fullscreen": false
       }
     ],
     "security": {

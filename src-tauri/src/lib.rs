@@ -16,8 +16,8 @@ use tauri::{Manager, State};
 use error::ApiError;
 #[cfg(feature = "tauri-app")]
 use models::{
-    DeleteResponse, Entry, EntryCreatePayload, EntryListPayload, EntrySummary, EntryUpdatePayload,
-    GenerateOptions, IdPayload, IdleTimeoutPayload, MasterPasswordPayload, PasswordOutput,
+    DeleteResponse, Entry, EntryCreatePayload, EntryInput, EntryListPayload, EntrySummary,
+    EntryUpdatePayload, GenerateOptions, IdPayload, IdleTimeoutPayload, PasswordOutput,
     VaultStatus,
 };
 #[cfg(feature = "tauri-app")]
@@ -37,19 +37,19 @@ fn vault_exists(state: State<'_, AppState>) -> Result<bool, ApiError> {
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn vault_setup(
-    payload: MasterPasswordPayload,
+    master_password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultStatus, ApiError> {
-    state.service.vault_setup(payload.master_password)
+    state.service.vault_setup(master_password)
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn vault_unlock(
-    payload: MasterPasswordPayload,
+    master_password: String,
     state: State<'_, AppState>,
 ) -> Result<VaultStatus, ApiError> {
-    state.service.vault_unlock(payload.master_password)
+    state.service.vault_unlock(master_password)
 }
 
 #[cfg(feature = "tauri-app")]
@@ -73,63 +73,65 @@ fn vault_touch(state: State<'_, AppState>) -> Result<VaultStatus, ApiError> {
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn vault_set_idle_timeout(
-    payload: IdleTimeoutPayload,
+    idle_timeout_sec: u32,
     state: State<'_, AppState>,
 ) -> Result<VaultStatus, ApiError> {
-    state.service.vault_set_idle_timeout(payload)
+    state
+        .service
+        .vault_set_idle_timeout(IdleTimeoutPayload { idle_timeout_sec })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn entry_list(
-    payload: EntryListPayload,
+    query: Option<String>,
+    sort: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<Vec<EntrySummary>, ApiError> {
-    state.service.entry_list(payload)
+    state.service.entry_list(EntryListPayload { query, sort })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
-fn entry_get(payload: IdPayload, state: State<'_, AppState>) -> Result<Entry, ApiError> {
-    state.service.entry_get(payload)
+fn entry_get(id: String, state: State<'_, AppState>) -> Result<Entry, ApiError> {
+    state.service.entry_get(IdPayload { id })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn entry_create(
-    payload: EntryCreatePayload,
+    entry: EntryInput,
     state: State<'_, AppState>,
 ) -> Result<Entry, ApiError> {
-    state.service.entry_create(payload)
+    state.service.entry_create(EntryCreatePayload { entry })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn entry_update(
-    payload: EntryUpdatePayload,
+    id: String,
+    entry: EntryInput,
     state: State<'_, AppState>,
 ) -> Result<Entry, ApiError> {
-    state.service.entry_update(payload)
+    state.service.entry_update(EntryUpdatePayload { id, entry })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn entry_delete(
-    payload: IdPayload,
+    id: String,
     state: State<'_, AppState>,
 ) -> Result<DeleteResponse, ApiError> {
-    state.service.entry_delete(payload)
+    state.service.entry_delete(IdPayload { id })
 }
 
 #[cfg(feature = "tauri-app")]
 #[tauri::command]
 fn password_generate(
-    options: Option<GenerateOptions>,
+    options: GenerateOptions,
     state: State<'_, AppState>,
 ) -> Result<PasswordOutput, ApiError> {
-    state
-        .service
-        .password_generate(options.unwrap_or_else(GenerateOptions::default))
+    state.service.password_generate(options)
 }
 
 #[cfg(feature = "tauri-app")]
